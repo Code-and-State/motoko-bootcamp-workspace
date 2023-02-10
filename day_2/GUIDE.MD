@@ -1,5 +1,4 @@
 # Day 2️⃣
-- More types: Text, Char & Float
 - Tuples (Product type)
 - Variant (Sum type)
 - Comments
@@ -96,16 +95,16 @@ let name : Text = "Motoko";
 let size = name.size()  // 6
 ```
 ## 🔤 Char
-A value of type `Text` is actually composed of values from another type: `Char`.  A `Text` is the concatenation of multiple characters. <br/>
-Characters are single-quote delimited `'`
+A value of type `Text` is actually composed of values from another type: `Char`. A `Text` is the concatenation of multiple characters. Characters are single-quote delimited `'`
 ```motoko
 let character_1 : Char = 'c';
 let character_2 : Char = '8';
 let character_3 : Char = '∏';
 ```
-`Char` are represented by their [Unicode code points](https://deliciousbrains.com/how-unicode-works/). We can use the `Char` module from the Base library to access the unicode value. 
+`Char` are represented by their [Unicode code points](https://deliciousbrains.com/how-unicode-works/). We can use the `Char` module from the Base library to check the unicode value. 
 ```motoko
 import Char "mo:base/Char";
+import Debug "mo:base/Debug";
 actor {
     let a : Char = 'a';
     Debug.print(debug_show(Char.toNat32(a)));   // 97
@@ -122,14 +121,55 @@ actor {
     };
 };
 ```
-> Notice how when we iterate `letter` is of type `Char` and need to convert it back to `Text` to use `Debug.print`.
+> Notice how when we iterate `letter` is a `Char` and we need to convert it back to `Text` to use `Debug.print`.
 
-
-
-
+The `Char` module also contains a few functions that can be used to test properties of characters:
+- `isDigit`
+```motoko
+Char.isDigit('9');  // true
+```
+- `isWhitespace`
+```motoko
+Char.isWhitespace('a'); // false
+```
+- `isLowercase`
+```motoko
+Char.isLowercase('c');  //  true
+```
+- `isUppercase`
+```motoko
+Char.isUppercase('D');  // true
+```
+- `isAlphabetic`
+```motoko
+Char.isAlphabetic('|'); // false
+```
 ## Float
-## Tuples
-## Variants
+`Float` are numbers that have a decimal part.
+```motoko
+let pi = 3.14;
+let e = 2.71;
+```
+If you want to use `Float` for whole numbers, you need to add the type descriptor otherwise they would automatically be casted to `Ìnt` or `Nat`. 
+```motoko
+let f : Float = 2;
+let n = 2;  // Automatically casted to type Nat
+```
+
+`Float` are implemented on 64-bits folowing the [IEEE 754 representation](https://www.geeksforgeeks.org/ieee-standard-754-floating-point-numbers/). Due to the limited precision, operations may result in numerical errors.
+```motoko
+0.1 + 0.1 + 0.1 == 0.3 // => false
+```
+```motoko
+1e16 + 1.0 != 1e16 // => false
+```
+
+`Float` supports all arithmetic operations and comparison seen before on `Nat`and `Int`.
+## 👯 Tuples
+
+## 🌈 Variants
+
 ## Object (records)
+
 ## Optional type
 
