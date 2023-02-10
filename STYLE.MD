@@ -1,0 +1,3 @@
+- Every term that is **strong** shouldn't be translated
+    - **canister**
+    - **The Internet Computer**
