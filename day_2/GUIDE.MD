@@ -2,13 +2,9 @@
 
 - Union type
 - Intersection type
+---
 
-
-## Union type
-
-## Intersection type
-
-## 📚 Using modules & the **Base** library
+## 📚 Base library
 Yesterday, we've only looked at operations that are built-in to the language. To perform more complex operations, we'll need to import and use modules, especially those from the [Base library](https://internetcomputer.org/docs/current/motoko/main/base/).
 
 The Base library is a set of modules & functions that provide functions for commonly used types (such as `Bool`, `Nat`, `Int`, `Text` and more).
@@ -264,7 +260,7 @@ func Student(_name : Text, _age : Nat, _score : Nat) : Student = object {
 ## 🔮 Structural typing
 **Typing** refers to the way in which data types are defined and checked in a programming language. There are two main approaches to typing: nominal typing and structural typing.
 
-In Motoko, the question of whether two types (or classes) are equal is based on their structure, not their names! This property is called **structural typing**. <br/>
+In Motoko, the question of whether two types (or classes) are equal is based on their structure, not their names. This property is called **structural typing**. <br/>
 
 What does it mean exactly? Let's imagine that we define two types.
 
@@ -285,9 +281,10 @@ Indeed, we can write the following, and it's correct!
 let John : Student = Player("John Doe", 0);
 let Emma : Player = Student("Emma Smith", 0);
 ```
-## 🌈 Variants
-Variants are extremly used and helpful. <br/>
 
+> Nominal types are rather problematic in a distributed setting, since somebody will “own” their definition locally. That is, you cannot really use them easily for messaging. So it was natural to avoid them when designing the Motoko language. 
+
+## 🌈 Variants
 A variant allows you to create a type that contains different cases. A value from the variant type represents one value that is exactly one of the given cases, or tags. Let's define a variant type for a `Vehicle` which can be either a car, a moto or a plane.
 
 ```motoko
@@ -333,6 +330,8 @@ public func start(v : Vehicle) : async Text {
     };
 };
 ```
+
+Variants are extremly used and helpful! 
 
 ## 🫙 Optional type
 In Motoko `null` is a special value that represents the absence of result. The value `null` is of type `Null` (and the type `Null` only contains only the `null` value). <br/> 
