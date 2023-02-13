@@ -178,7 +178,6 @@ public func print(t : Text) : async () {
     Debug.print(t);
 };
 ```
-
 ## 🎨 Object & custom type
 Objects are more readable than tuples since each field has a name. The  different fields are also each assigned a type which cannot be modified once declared.  
  Let's define an object called `student`, which contains 4 fields: 
@@ -262,7 +261,30 @@ func Student(_name : Text, _age : Nat, _score : Nat) : Student = object {
 };
 ```
 
+## 🔮 Structural typing
+**Typing** refers to the way in which data types are defined and checked in a programming language. There are two main approaches to typing: nominal typing and structural typing.
 
+In Motoko, the question of whether two types (or classes) are equal is based on their structure, not their names! This property is called **structural typing**. <br/>
+
+What does it mean exactly? Let's imagine that we define two types.
+
+```motoko
+class Student(_name : Text,  _score : Nat) {
+    public let name : Text = _name;
+    public var score : Nat = _score;
+};  
+
+class Player (_name : Text,  _score : Nat) {
+    public let name : Text = _name;
+    public var score : Nat = _score;
+}
+```
+Those two types are considered equal from the point of view of the language. 
+Indeed, we can write the following, and it's correct! 
+```motoko
+let John : Student = Player("John Doe", 0);
+let Emma : Player = Student("Emma Smith", 0);
+```
 ## 🌈 Variants
 Variants are extremly used and helpful. <br/>
 

@@ -1,10 +1,9 @@
 # Day 3️⃣
-- 🔮 Structural typing vs Nominal typing
-- List
-- Classes
+- HTTP Requests
+
 ## 🗃️ Arrays
 In Motoko, an array of type `Array` is a group of **similar** elements that are stored together. To create an array, one must specify the types of elements that the array will contain. 
-For instance, to create an arrray that will hold `Nat`.
+For instance, to create an array that will hold `Nat`.
 ```motoko
 let ages : [Nat] = [16, 32, 25, 8, 89];
 ```
@@ -184,7 +183,6 @@ func isArrayEven<T>(array : [T]) : Bool {
     };
 };
 ```
-
 Notice `<T>` following the name of the function. It means that this function now depends on the type of `T`. We need to specify the type of `T` when we want to use the function.
 ```motoko
 let array : [Nat] = [1,2,3,4];
@@ -204,4 +202,294 @@ We've  already used generics when playing with `Buffer` & `Array` without talkin
     Array.append<Nat>(array1, array2) // [1, 2, 3, 4, 5, 6];
     ```
 
+## 🚥 Result type
+The `Result` type is extremly useful in Motoko to handle errors, it is defined as a variant type. 
+```motoko
+type Result<Ok, Err> = {#ok : Ok; #err : Err}
+```
+It can be used by importing the [Result library](https://internetcomputer.org/docs/current/motoko/main/base/Result). 
+The generics `Ok` and `Err` can be used to customize the types you want to return to return in case of success or error. 
+Let's imagine the following situation: we want to create a `Result` type that indicates whether a student graduate or not. 
+- If the student graduate we return the score of the student.
+- If the student fails we return a variant that indicate the reason for failure (score too low, absent, cheating...).
 
+```motoko
+type Score = Nat; // The score of a student. 
+type ExamFailed = {
+    #ScoreTooLow : Nat;     //  The score of the student. 
+    #Absent;    //  One reason for failing an exam.
+    #Cheated;   //  Another one.
+};
+type ExamResult = Result.Result<Score, ExamFailed>;
+```
+It is common to use a variant type for `Err`. It enables a more granular control over the different types of errors and facilitate pattern matching.
+```motoko
+func sendMessageToStudent(result : ExamResult) : Text {
+    switch(result) {
+        case(#ok(score)){
+            return ("Congrats 🎉 - you have graduated with a score of : " # Nat.toText(score));
+        };
+        case(#err(failure)){
+            switch(failure){
+                (#ScoreTooLow(score)){
+                    return ("Unfortunately your score is below requirements. Next time you'll graduate! You had a score of : " # Nat.toText(score));};
+                };
+                case(#Absent){
+                    return ("You were absent at the exam. Please schedule another time.");
+                };
+                case(#Cheated){
+                    return("Cheating is a short-term gain that leads to long-term pain");
+                };
+            };
+        };
+    };
+};
+```
+`Result` is used for errors that are generally expected in your program and where you want to return something. In case of an unexpected and unrecoverable error you should `trap` your code. 
+The best way to do so if to use the `Debug.trap()` method from the [Debug library](https://internetcomputer.org/docs/current/motoko/main/base/Debug) which allows you to pass an error message along the `trap`.
+```motoko
+func trap(errorMessage : Text) : None
+```
+Trapping can also be caused by `assert(false)`. Assertions allow you to conditionally trap when some Boolean test fails to hold, but continue execution otherwise.
+```motoko
+let n = 38;
+assert n % 2 == 0; // traps when n not even
+assert(false);  // always traps
+```
+
+## 🌍 HTTP request: accessing a canister through a browser.
+In this module, we will cover how canisters can be accessed through HTTP requests. This is a separate topic from **HTTP Outcalls**:
+
+- HTTP Request: Canisters can handle incoming requests and serve web pages.
+- HTTP Outcalls: Canisters can send requests and communicate with the Web 2.0 world. This can be used for various use cases, such as querying an exchange for token prices, getting the latest weather information, and sending notifications to us
+
+
+Whenever you [access a canister](https://wujxq-qqaaa-aaaaj-qazca-cai.raw.ic0.app/) through your browser there are a few steps involved. Let's go through all of them.
+You will notice that URLs on the Internet Computer are of the following form: <CANISTER_ID>.ic0.app The .ic0.app indicates that you are reaching out to [boundary nodes]().
+
+### What are boundary nodes?
+Canisters are hosted and executed by nodes that participate in the IC consensus However, those nodes are not directly accessible by end users.
+To protect the consensus nodes & improve performance there is a layer of boundary nodes which serve different useful purposes:
+
+- Translate the HTTP request of the user's browser to canister call. This part is called the HTTP Gateway protocol. When canisters send their response the gateway will convert it back to an HTTP request.
+- Route the calls to the correct subnet running the canister. To properly route those calls the boundary nodes have to keep track of the entire configuration of the Internet Computer:
+    - List of subnets.
+    - List of nodes and which subnet they belong to.
+    - The canisters run by each subnet.
+- Load balancing among the subnet's replica nodes (i.e if a replica is lagging behind and has already a lot of work on its plate - boundary nodes will send the request to another replica).
+- Protect subnets from DDoS attacks.
+
+<p align="center"> <img src="./img/http_gateway.png" width="800px" style="border: 2px solid black;"> </p>
+
+> Currently, boundary nodes are run by the DFINITY Foundation. However, the objective ([as part of the roadmap](https://forum.dfinity.org/t/boundary-node-roadmap/15562)) is to have anyone able to set up and run a boundary nodes. This will make interaction with the Internet Computer more reactive for end users and this will make the platform more robust to censorship.
+
+### Asset canister
+
+To serve web content on the Internet Computer, a canister should have a method that can handle an `http_request`, which includes the URL, HTTP method, and headers, and produce an HTTP response, consisting of a status, headers, and body. There are two ways to go about that:
+
+- Implement the http_request method and all associated logic yourself.  
+- Use the provided **asset** canister: this is a special canister whose code has been already implemented by DFINITY. You need to specify the type of this canister in `dfx.json` & add the source folder of your web app. Once the asset canister is deployed on the Internet Computer the website can be accessed at `http://<canister id>.ic0.app` and `http://<canister id>.raw.ic0.app`. The frontend canister that is shipped when you deploy a project with `dfx new <project>` is an asset canister (as you can confirm by looking at `dfx.json`).
+
+> You can access [the source code for this canister written in Rust](https://github.com/dfinity/sdk/tree/master/src/canisters/frontend/ic-frontend-canister) under the [DFINITY organization](https://github.com/dfinity).  
+
+### What is the difference: ic0.app vs raw.ic0.app?
+As we've said earlier there are two ways to access a canister:
+- raw.ic0.app: the raw URL raw URL will simply return the request as it is so serves the asset files (HTML, CSS, Javascript).
+- ic0.app: uses a service worker to verify the content served by the boundary node. The service worker is loaded and then handles requests, verifying the signature of the assets served by the canister using the public key on the Internet Computer.
+
+<p align="center"> <img src="./img/service_worker.png" width="800px" style="border: 2px solid black;"> </p>
+<p align="center"> Loading the service worker...</p>
+
+When accessing a webpage, speed is a key factor. This is why we use query calls to handle http_request. However, it's important to note that query calls do not go through a consensus process and cannot create signatures. To address this issue, we use certified variables. This means that the content must be certified prior to the call being made. In some cases, this certification process may not be possible and if you are accessing a website under ic0.app, you may encounter an error page as a result.
+
+<p align="center"> <img src="./img/body_no_verification.png" width="800px" style="border: 2px solid black;"> </p>
+
+<p align="center" > In that case you should access under raw.ic0.app to avoid the issue.</p>
+
+> It's worth noting that the service worker received when accessing ic0.app could potentially be altered by the boundary node to certify incorrect responses. This is a potential issue since most users won't take the time to verify the authenticity of the service worker. To mitigate this risk, it would be ideal to have the public key of the Internet Computer directly integrated into the hardware or browser! This would provide an expectional level of security and be a convenient option, giving users peace of mind and the confidence to trust the authenticity of the content they are accessing!"
+
+### 🤙 Contacting the canister
+Once the boundary node has received the request. It will encode it into Candid and automatically call the http_request method of the canister. reachable by browsers, you need to implement an `http_request` method as part of the public interface of your  actor. <br/>
+
+This is the minimum code needed to return a simple page that prints **Hello world**.
+```motoko 
+import Text "mo:base/Text";
+import Http "http";
+actor {
+    public type HttpRequest = Http.HttpRequest;
+    public type HttpResponse = Http.HttpResponse;
+
+    public query func http_request(req : HttpRequest) : async HttpResponse {
+        return({
+            body = Text.encodeUtf8("Hello World");
+            headers = [];
+            status_code = 200;
+            streaming_strategy = null;
+        });
+    };
+};
+```
+
+## 🧩 Module 
+You may have noticed the `HttpRequest` and `HttpResponse` types in the Motoko code earlier. These types are defined in an external file called `http.mo`. So far we've only seen how to import modules from the Base library - let's move to the next level and see how we can create and import our own modules!
+
+> It is a recommended practice to create custom types and their associated methods in a separate file for organization, clarity, and reusability. This is want we are going to do for the HTTP related types.
+
+Here is the content of the `HTTP` module, the file name is `http.mo`.
+```motoko
+module Http {
+    public type HeaderField = (Text, Text);
+
+    public type HttpRequest = {
+        body: Blob;
+        headers: [HeaderField];
+        method: Text;
+        url: Text;
+    };
+
+    public type HttpResponse = {
+        body: Blob;
+        headers: [HeaderField];
+        status_code: Nat16;
+        streaming_strategy: ?StreamingStrategy;
+    };
+
+    public type StreamingStrategy = {
+        #Callback: {
+            callback : StreamingCallback;
+            token    : StreamingCallbackToken;
+        };
+    };
+
+    public type StreamingCallback = query (StreamingCallbackToken) -> async (StreamingCallbackResponse);
+
+    public type StreamingCallbackToken =  {
+        content_encoding : Text;
+        index            : Nat;
+        key              : Text;
+    };
+
+    public type StreamingCallbackResponse = {
+        body  : Blob;
+        token : ?StreamingCallbackToken;
+    };
+}
+```
+
+Instead of our usual `main.mo` file, which typically starts with the `actor`keyword.
+```motoko
+actor {
+
+}
+```
+It has been replaced by the `module` keyword.
+```motoko
+module {
+
+}
+```
+This indicates that the `http.mo` will not be used to declare an actor with a public interface but instead a module with a public interface that will be imported into the main file.
+
+> The concept of a `public` field in a module changes its meaning from what we've been used to. Public methods or variables in a module can be accessed by importing the file into the main module, `main.mo`, but it does not mean that it can directly be accessed by other canisters or users.
+
+We can also add a name to help identify the module. It is possible to have multiple modules with different names in the same file - though it is not recommended to do so to keep things clear and simple.
+
+```motoko
+module Http {
+
+}
+```
+
+### HttpRequest
+Here is how the `HttpRequest` type is defined in Motoko.
+```motoko
+module Http {
+    public type HeaderField = (Text, Text);
+
+    public type HttpRequest = {
+        body: Blob;
+        headers: [HeaderField];
+        method: Text;
+        url: Text;
+    };
+}
+```
+To help illustrate the concept, I have deployed a canister that returns a webpage containing all the information contained in the HttpRequest object it receives <br/> 
+You can access it [here](https://yq5pi-saaaa-aaaap-aaxfq-cai.raw.ic0.app/).<br/>
+
+
+<p align="center"> <img src="./img/http_request_motoko.png" width="800px" style="border: 2px solid black;"> </p>
+<p align="center"> Different information will show up based on your browser, language & machine.</p>
+
+
+As you can see when we access the following URL: 
+https://yq5pi-saaaa-aaaap-aaxfq-cai.raw.ic0.app/
+
+- The **URL** is /.
+- The **method** is GET.
+- The **headers** will depend on your configuration (IP address, browser, os, language...).
+- The **body** is empty. 
+
+```motoko
+let request : HttpRequest = {
+    body = null;
+    headers = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")];
+    method = "GET";
+    url="/";
+}
+```
+
+> The URL appears different because the boundary node removes unnecessary parts and directs the request to the canister, making the URL seen by the canister /. The original URL accessed by the client is https://yq5pi-saaaa-aaaap-aaxfq-cai.raw.ic0.app/.
+### HttpResponse
+Here is how the `HttpResponse` type is defined in Motoko.
+
+```motoko
+public type HttpResponse = {
+    status_code: Nat16;
+    headers: [HeaderField];
+    body: Blob;
+    streaming_strategy: ?StreamingStrategy;
+};
+```
+- The [status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) is a three-digits number returned to indicate the outcome of the request and the status of the response. The first digit defines the category of the response:
+    - 2xx indicates a successful response.
+    - 4xx indicates a client error.
+    - 5xx indicates a server error.
+    -  few commons status codes are:
+        - 200: OK.
+        - 404: Not found.
+        - 500: Internal Server Error.
+    > Since the status code is always a three-digits number, we can use Nat16 which is a type of Nat that have a limited range of values.  Nat16 is stored on 16 bits so the range of values that can be represented is 0 to 2^16 - 1. The main point of using Nat16 instead of Nat is to save some memory space. 
+
+- The `headers` field is the same concept we've seen earlier for `HttpRequest`.
+
+- The `body` is encoded as [UTF-8](https://www.freecodecamp.org/news/what-is-utf-8-character-encoding/). You can encode `Text` in Motoko using the [Text module](https://internetcomputer.org/docs/current/developer-docs/build/cdks/motoko-dfinity/base/Text).
+    <p align="center"> <img src="./img/utf8_encode_decode.png" width="800px" style="border: 2px solid black;"> </p>
+
+- Streaming strategy is a field for handling HTTP responses in a streaming manner, with the ability to callback for more data using the defined callback function. It is defined as follows:
+    ```motoko
+    public type StreamingStrategy = {
+            #Callback: {
+                callback : StreamingCallback;
+                token    : StreamingCallbackToken;
+            };
+        };
+        public type StreamingCallback = query (StreamingCallbackToken) -> async (StreamingCallbackResponse);
+
+        public type StreamingCallbackToken =  {
+            content_encoding : Text;
+            index            : Nat;
+            key              : Text;
+        };
+
+        public type StreamingCallbackResponse = {
+            body  : Blob;
+            token : ?StreamingCallbackToken;
+        };
+    ```
+Some explanations:
+- **StreamingStrategy** is an object type that has a single property, callback, which is an object that contains a callback function and a token.
+
+- The **StreamingCallback** function is called in a loop, passing in a **StreamingCallbackToken** each time. The response from the callback includes a body and an optional new token, which is passed to the next iteration of the loop. The loop continues until the callback returns a response without a token!  <br/>
+
+This is extremely useful because some pages or files are too large to be processed into a single message, and therefore, the use of StreamingStrategy is required.

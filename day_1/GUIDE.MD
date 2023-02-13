@@ -228,7 +228,7 @@ The **Motoko** language places a strong emphasis on types and is more strict in 
 <p align="center"> <img src="./img/motoko_primitives_types.png" width="800px" style="border: 2px solid black;"> </p>
 <p align="center"> A few primitive types</p>
 
-Each variable is assigned a specific type, which is determined before the program runs. The compiler checks each use of the variable to avoid errors that may occur during runtime, such as null reference errors, accessing invalid fields, and other type-related issues.
+Each variable is assigned a specific type, which is determined before the program runs. The compiler checks each use of the variable to avoid errors that may occur during runtime.
 
 To assign a type to a variable we use the `:` symbol - as in the following examples: 
 ```motoko
@@ -238,7 +238,7 @@ let open : Bool = false;
 ```
 You can generally omit the type declaration - the compiler will automatically assign a type to the variable based on the first value that you provide:
 ```
-let age = 20;
+let age = 20;   // Will be assigned type Nat
 ```
 > For the duration of the Bootcamp it is recommended to keep all type declarations to make things clearer, especially if you are new to typed languages.
 
