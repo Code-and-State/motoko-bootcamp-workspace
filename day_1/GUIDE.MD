@@ -1,4 +1,5 @@
 # Day 1️⃣
+- Comments
 ## Welcome to the Motoko Bootcamp 🏕️
 [TODO]
 

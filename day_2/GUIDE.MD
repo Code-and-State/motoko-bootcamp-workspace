@@ -1,12 +1,12 @@
 # Day 2️⃣
-- Comments
-- Optional types
-- Structural typing / Named typing
-- Types intersection & union
-- Shared types
-- Buffer 
-- List
-- Array
+
+- Union type
+- Intersection type
+
+
+## Union type
+
+## Intersection type
 
 ## 📚 Using modules & the **Base** library
 Yesterday, we've only looked at operations that are built-in to the language. To perform more complex operations, we'll need to import and use modules, especially those from the [Base library](https://internetcomputer.org/docs/current/motoko/main/base/).
@@ -87,7 +87,7 @@ let surname : Text = "Bootcamp";
 let completeName : Text = firstName # surname;
 ```
 
-We can access the size of a `Text` by calling the `size()` method.
+We can access the size of a `Text` by calling the `.size()` method.
 ```motoko
 let name : Text = "Motoko";
 let size = name.size()  // 6
@@ -227,6 +227,42 @@ type Student = {
     graduate : Bool;
 };
 ```
+## 🏭 Classes
+Classes are factories for constructing object. A class allows us to define a type that can take on parameters and functions. Functions that are attached on the object are usually called **methods**.
+```motoko
+class Student(_name : Text, _age : Nat, _score : Nat) {
+    public let name : Text = _name;
+    public var age : Nat = _age;
+    public var score : Nat = _score;
+    public func study() {
+        score +=1;
+    };
+};
+```
+Once the `Class` is defined we can easily create new instances by providing parameters.
+```motoko
+let John : Student = Student("John Doe", 25, 0);
+``` 
+
+`Class` is just a keyword that provides syntaxic sugar - we could also write the following: 
+```motoko
+type Student = {
+    name : Text;
+    var age : Nat;
+    var score : Nat;
+};
+
+func Student(_name : Text, _age : Nat, _score : Nat) : Student = object {
+    public let name : Text = _name;
+    public var age : Nat = _age;
+    public var score : Nat = _score;
+    public func study() {
+        score +=1;
+    };
+};
+```
+
+
 ## 🌈 Variants
 Variants are extremly used and helpful. <br/>
 
@@ -276,24 +312,6 @@ public func start(v : Vehicle) : async Text {
 };
 ```
 
-
-
-## 🔮 Structural typing vs Nominal typing
-Let's define two types with different names but the same internal structure.
-```motoko
-type Bar = {
-    value : Nat;
-};
-```
-```motoko
-type Foo = {
-    value : Nat;
-};
-```
-In most programming 
-
-## Intersection & union
-
 ## 🫙 Optional type
 In Motoko `null` is a special value that represents the absence of result. The value `null` is of type `Null` (and the type `Null` only contains only the `null` value). <br/> 
 An optional type, is a type that can either hold a value or "nothing". It is a way to represent the possibility that a value may be absent. We use the `?` symbol to indicate an optional type.
@@ -335,8 +353,7 @@ actor {
     };
 }
 ```
-## 🤝 Shared types
-## 👤 Generic Type
+
 
 # 🧩 What is DAO? Overview of the NNS
 
@@ -361,7 +378,6 @@ A few usecases for DAOs include:
 - **Decision-making**: DAOs can be used to enable members to make decisions about the direction of a project or organization. For example, MakerDAO is a decentralized finance (DeFi) platform that is built on the Ethereum blockchain and is governed by a DAO, in which members can vote on proposals to change the parameters of the MakerDAO system, such as the interest rates on loans.
 
 - [TODO: ADD MORE]
-
 
 ## 🙁 Limitations of DAOs
 As we've said DAOs are formed through smart contracts. However, smart-contracts are pretty limited:
@@ -391,17 +407,13 @@ Does it sound interesting? Welcome to the fabulous world of **canisters**! <br/>
 
 <p align="center"> <img src="img/canister.png" width="800px" style="border: 2px solid black;"></p>
 <p align="center"> Imagine what DAOs will be able to achieve using canisters!</p>
+By using canisters, DAOs are now able to control entire web applications.
 
-
-By using canisters, DAOs are now able to control entire webapplications.
-
-This means that future webservices (social network, search engine, games, mail client, messaging application...) can run entirely on a set of canisters, where the governance of those canisters is ensured through a tokenized public governance canister.  <br/>
-
+This means that future web services (social network, search engine, games, mail client, messaging application...) can run entirely on a set of canisters, where the governance of those canisters is ensured through a tokenized public governance canister.  <br/>
 
 <p align="center"> <img src="./img/ois.png" width="800px" style="border: 2px solid black;"> </p>
 
-
-This concepts is called Open Internet Services. The aim is to end the current monopoly of BigTech companies (Facebook, Google, Apple, Twitter, Microsoft, Tiktok... ) that profits from the centralized aspect of the Internet. By aligning incentivizes between investors, users, and developers, those services are expected to operate in a more transparent and cooperative manner.
+This concept is called Open Internet Services. The aim is to end the current monopoly of BigTech companies (Facebook, Google, Apple, Twitter, Microsoft, Tiktok... ) that profits from the centralized aspect of the Internet. By aligning incentivizes between investors, users, and developers, those services are expected to operate in a more transparent, privacy-friendly and cooperative manner.
 
 <p align="center"> <img src="./img/web2_web3.jpeg" width="400px" style="border: 2px solid black;"> </p>
 
