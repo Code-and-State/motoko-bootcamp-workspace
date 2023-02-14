@@ -1,5 +1,5 @@
 # Day 3️⃣
-- HTTP Requests
+- List?
 
 ## 🗃️ Arrays
 In Motoko, an array of type `Array` is a group of **similar** elements that are stored together. To create an array, one must specify the types of elements that the array will contain. 
@@ -201,61 +201,6 @@ We've  already used generics when playing with `Buffer` & `Array` without talkin
     let array2 = [4, 5, 6];
     Array.append<Nat>(array1, array2) // [1, 2, 3, 4, 5, 6];
     ```
-
-## 🚥 Result type
-The `Result` type is extremly useful in Motoko to handle errors, it is defined as a variant type. 
-```motoko
-type Result<Ok, Err> = {#ok : Ok; #err : Err}
-```
-It can be used by importing the [Result library](https://internetcomputer.org/docs/current/motoko/main/base/Result). 
-The generics `Ok` and `Err` can be used to customize the types you want to return to return in case of success or error. 
-Let's imagine the following situation: we want to create a `Result` type that indicates whether a student graduate or not. 
-- If the student graduate we return the score of the student.
-- If the student fails we return a variant that indicate the reason for failure (score too low, absent, cheating...).
-
-```motoko
-type Score = Nat; // The score of a student. 
-type ExamFailed = {
-    #ScoreTooLow : Nat;     //  The score of the student. 
-    #Absent;    //  One reason for failing an exam.
-    #Cheated;   //  Another one.
-};
-type ExamResult = Result.Result<Score, ExamFailed>;
-```
-It is common to use a variant type for `Err`. It enables a more granular control over the different types of errors and facilitate pattern matching.
-```motoko
-func sendMessageToStudent(result : ExamResult) : Text {
-    switch(result) {
-        case(#ok(score)){
-            return ("Congrats 🎉 - you have graduated with a score of : " # Nat.toText(score));
-        };
-        case(#err(failure)){
-            switch(failure){
-                (#ScoreTooLow(score)){
-                    return ("Unfortunately your score is below requirements. Next time you'll graduate! You had a score of : " # Nat.toText(score));};
-                };
-                case(#Absent){
-                    return ("You were absent at the exam. Please schedule another time.");
-                };
-                case(#Cheated){
-                    return("Cheating is a short-term gain that leads to long-term pain");
-                };
-            };
-        };
-    };
-};
-```
-`Result` is used for errors that are generally expected in your program and where you want to return something. In case of an unexpected and unrecoverable error you should `trap` your code. 
-The best way to do so if to use the `Debug.trap()` method from the [Debug library](https://internetcomputer.org/docs/current/motoko/main/base/Debug) which allows you to pass an error message along the `trap`.
-```motoko
-func trap(errorMessage : Text) : None
-```
-Trapping can also be caused by `assert(false)`. Assertions allow you to conditionally trap when some Boolean test fails to hold, but continue execution otherwise.
-```motoko
-let n = 38;
-assert n % 2 == 0; // traps when n not even
-assert(false);  // always traps
-```
 
 ## 🌍 HTTP request: accessing a canister through a browser.
 In this module, we will cover how canisters can be accessed through HTTP requests. This is a separate topic from **HTTP Outcalls**:
@@ -466,7 +411,7 @@ public type HttpResponse = {
 - The `body` is encoded as [UTF-8](https://www.freecodecamp.org/news/what-is-utf-8-character-encoding/). You can encode `Text` in Motoko using the [Text module](https://internetcomputer.org/docs/current/developer-docs/build/cdks/motoko-dfinity/base/Text).
     <p align="center"> <img src="./img/utf8_encode_decode.png" width="800px" style="border: 2px solid black;"> </p>
 
-- Streaming strategy is a field for handling HTTP responses in a streaming manner, with the ability to callback for more data using the defined callback function. It is defined as follows:
+- `Streaming strategy` is a field for handling HTTP responses in a streaming manner, with the ability to callback for more data using the defined callback function. It is defined as follows:
     ```motoko
     public type StreamingStrategy = {
             #Callback: {
@@ -488,8 +433,8 @@ public type HttpResponse = {
         };
     ```
 Some explanations:
-- **StreamingStrategy** is an object type that has a single property, callback, which is an object that contains a callback function and a token.
+- `StreamingStrategy` is an object type that has a single property, callback, which is an object that contains a callback function and a token.
 
-- The **StreamingCallback** function is called in a loop, passing in a **StreamingCallbackToken** each time. The response from the callback includes a body and an optional new token, which is passed to the next iteration of the loop. The loop continues until the callback returns a response without a token!  <br/>
+- The `StreamingCallback` function is called in a loop, passing in a `StreamingCallbackToken` each time. The response from the callback includes a body and an optional new token, which is passed to the next iteration of the loop. The loop continues until the callback returns a response without a token!  <br/>
 
-This is extremely useful because some pages or files are too large to be processed into a single message, and therefore, the use of StreamingStrategy is required.
+This is extremely useful because some pages or files are too large to be processed into a single message, and therefore, the use of `StreamingStrategy` is required.
