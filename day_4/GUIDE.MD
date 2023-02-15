@@ -219,3 +219,161 @@ How does DSCVR determine that you have a diploma and allow you access to the por
 
 > This last solution is currrently the focus of several projects on the Internet Computer. [The protocol](https://github.com/dfinity/wg-identity-authentication/blob/main/topics/attribute-sharing.md) allowing for sharing of credentials is [being discussed and designed by the Identity & Authentication Working Group](https://forum.dfinity.org/t/technical-working-group-identity-authentication/). 
 
+## Datastructures
+### HashMap & TrieMap 
+In Motoko, [HashMap](https://internetcomputer.org/docs/current/references/motoko-ref/HashMap) and [TrieMap](https://internetcomputer.org/docs/current/references/motoko-ref/HashMap) are both implemented as a Class and have the same interface. The only difference is that `TrieMap` is represented internaly by a `Trie` while `HashMap` is using `AssocList`. All examples that will follow use `HashMap` but it would be similar for `TrieMap`. 
+
+- K is the type of the key (`Nat`, `Text`, `Principal`...)
+- V is type of the value that will be stored (User data, Token balance...)
+
+```motoko
+class HashMap<K, V>(initCapacity : Nat, keyEq : (K, K) -> Bool, keyHash : K -> Hash.Hash)
+```
+
+To instantiate a value from the class, we need to provide:
+1. An initial capacity of type `Nat`.
+    ```motoko
+    initCapacity : Nat
+    ```
+2. A function that can be used for testing equality of the keys.
+    ```motoko
+    keyEq : (K, K) -> Bool
+    ```
+3. A function that can be used for hashing the keys.
+    ```motoko
+    keyHash : K -> Hash.Hash
+    ```
+
+Let's imagine that we want to store a `Student` associated with his `Principal`. Where `Student` is defined as
+```motoko
+type Student = {
+    name : Text;
+    age : Nat;
+    favoriteLanguage : Text;
+    graduate : Bool;
+};
+```
+
+In that case:
+- K is of type `Principal` and represents the key of the HashMap.
+- V is of type `User` and represents the stored value. 
+
+To initiate our `HashMap`
+```motoko
+import HashMap "mo:base/HashMap";
+import Principal "mo:base/Principal";
+actor {
+    type Student = {
+        name : Text;
+        age : Nat;
+        favoriteLanguage : Text;
+        graduate : Bool;
+    };
+
+    let map = HashMap.HashMap<Principal, Student>(1, Principal.equal, Principal.hash);
+}
+```
+To add a new entry to the `map` we can use the `.put()` method.
+```motoko
+map.put(principal, student);
+```
+This will insert the value `student` with key `principal` and overwrites any previous value. We can use this method to create a `register` function that students would need to call and provide all their relevant informations.
+
+```motoko
+public shared ({ caller }) func register(name : Text, age : Nat, favoriteLanguage : Text) : async () {
+    if(Principal.isAnonymous(caller)){
+        // We don't want to register the anonymous identity
+        return;
+    };
+    let student : Student = {
+        name;
+        age;
+        favoriteLanguage;
+        graduate = false;  
+    };
+    map.put(caller, student);
+};
+```
+
+Once a value has been inserted in the `map`, we can access it using the `.get()` method.
+```motoko
+map.get(principal);
+```
+This will return an optional value `?Student` associated with the provided principal. We can use this method to create a `getStudent` `query` function that would return information on students.
+```motoko
+public query func getStudent(p : Principal) : async ?Student {
+map.get(p);
+};
+```
+We can delete a value from the `map` by using the `.delete()` or `remove()` methods.
+```motoko
+map.delete(principal);   // Delete but doesn't return the value
+let oldValue = map.remove(principal);   // Delete but returns the value
+```
+It is possible to iterate over the map:
+- You can iterate over the keys with `.keys()`.
+- You can iterate over the values with `.vals()`.
+- You can iterate over both with `.entries()`.
+
+### RBTree
+[TODO : Section]
+### Trie
+[TODO : Section]
+## ♻️ Upgrades.
+Upgrading a canister is a common task.
+There are a few things to consider before doing so:
+
+- Could the upgrade cause data loss?
+- Could the upgrade break the dApp due to interface changes?
+
+### Stable memory vs Heap Memory
+A canister has access to two types of memories: 
+1. A wasm heap which is constrained to 4 GiB because currently the runtime of canisters [wasmtime](https://github.com/bytecodealliance/wasmtime) has only 32 bit addressing. This limit will be increased when [wasm64](https://github.com/WebAssembly/memory64) is supported by the runtime. The heap is a “pile" of memory, it is space available to the canister to allocate and de-allocate as needed. The heap is wiped during upgrades. The heap is the fastest memory available to the canister.
+
+2. A [stable memory](https://internetcomputer.org/docs/current/references/ic-interface-spec#system-api-stable-memory) that can currently store up to 48GiB of storage. Everything in stable memory will survive upgrades. Accessing data in stable memory is slower compared to accessing memory in the heap because stable memory is not directly accessible within the runtime environment. Instead, accessing stable memory requires calling an external API.
+
+> Developers who are new to the IC often ask the question: which memory should I use? Unfortunately, there is no one-size-fits-all answer to this question. The optimal choice depends on the requirements of your application (safety during upgrade over performances) and the amount of memory you'll need. If you are interested, [read & join the discussion over this topic that is constantly evolving](https://forum.dfinity.org/t/motoko-stable-memory-in-2022/10433). 
+
+### Stable variables 
+When a canister is upgraded, the state is lost by default. This means all data application data will be lost, unless it's handled to persist when the canister is upgraded. <br/>
+This can be achieved by storing the data in stable variables, which will persist upgrades. To declare a variable as stable we use the `stable` keyword.
+```motoko
+stable var m : Int = 0;
+```
+The value of `m` will persits upgrades and not be lost. 
+A stable variable is stored in the stable memory.
+
+### Stable types
+Unfortunately, not all variables can be declared as stables. 
+```motoko
+stable let map = HashMap.HashMap<Principal, Student>(1, Principal.equal, Principal.hash);
+```
+If we try with the `HashMap` type that we've seen earlier we will encounter an error: `variable map is declared stable but has non-stable type`. 
+
+All primitives types are stable:
+- `Nat` 
+- `Text`
+- `Ìnt`
+- All bounded numbers: `Nat8`, `Nat16`, `Nat32`, `Nat64`, `Int8`, `Int16`, `Int32`, `Int64`.
+- `Float`
+- `Char`
+- `Bool`
+- `Array`
+
+An object that contains methods (i.e a Class) cannot be stable. That's why `HashMap` & `TrieMap` cannot be declared as stable structures.
+
+> It is possible to rewrite some libraries to convert them to stable types. For instance, [StableBuffer](https://github.com/canscale/StableBuffer) is a remake of the `Buffer` type allowing it to be called stable. 
+
+### Interface changes
+Another challenge when upgrading a canister in a distributed environment like the Internet Computer is that other canisters might be relying on the interface of the canister being upgraded.
+
+Let's imagine that we have two canisters:
+1. Canister A is the canister that we want to upgrade.
+```motoko
+stable var m : Int = 0;
+```
+
+2. Canister B is the client canister that is relying on the interface of Canister A.
+```motoko
+stable var m : Int = 0;
+```
