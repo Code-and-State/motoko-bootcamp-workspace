@@ -1,7 +1,6 @@
 # Day 4️⃣
+- Intercanister call (basic)
 
-- Stable memory, stable variables & upgrades.
-- DataStructures: HashMap & TrieMap.
 
 ## 👦 Identity 
 ### Username & passwords.
@@ -170,7 +169,6 @@ actor {
     };
 };
 ```
-
 Principals have a textual representation. We can convert a `Principal` to his textual representation by using `Principal.toText()` from the [Principal module](https://internetcomputer.org/docs/current/motoko/main/base/Principal). Alternatively, we can get a `Principal` from his textual representation by using `Principal.fromText()`.
 
 ```motoko
@@ -368,12 +366,157 @@ An object that contains methods (i.e a Class) cannot be stable. That's why `Hash
 Another challenge when upgrading a canister in a distributed environment like the Internet Computer is that other canisters might be relying on the interface of the canister being upgraded.
 
 Let's imagine that we have two canisters:
-1. Canister A is the canister that we want to upgrade.
+1. Canister A is the canister that we want to upgrade. It contains many public functions but we will just focus on `getDiploma`.
 ```motoko
-stable var m : Int = 0;
+import HashMap "mo:base/HashMap";
+import Principal "mo:base/Principal";
+import Time "mo:base/Time";
+actor School {
+
+    type Diploma = {
+        delivery_time : Time.Time;
+        teacher : Principal;
+        promotion : Nat;
+    };
+
+    let diplomas = HashMap.HashMap<Principal, HashMap>(0, Principal.equal, Principal.hash);
+
+    public func getDiploma(p : Principal) : async ?Diploma {
+        return diplomas.get(p);
+    };
+
+};
 ```
 
-2. Canister B is the client canister that is relying on the interface of Canister A.
+2. Canister B is the client canister that is relying on the interface of Canister A. We have to imagine that somewhere in the code of Canister B the `getDiploma` function of Canister A is called.
+[TODO : Change canister ID];
 ```motoko
-stable var m : Int = 0;
+actor dApp {
+    type Diploma = {
+        delivery_time : Time.Time;
+        teacher : Principal;
+        promotion : Nat;
+    };
+
+    // We define the other canister in the code here.
+    let schoolActor : actor {
+        getDiploma(p : Principal) -> async ?Diploma;
+    } =  actor("3db6u-aiaaa-aaaah-qbjbq-cai"); 
+
+    public func shared ({ caller }) isAuthorized() :  async Bool {
+        let answer = await schoolActor.getDiploma(caller);
+        switch(answer){
+            case(null){
+                return false;
+            };
+            case(? some){
+                return true;
+            };
+        };
+    };
+};
 ```
+Suppose we're upgrading canister A and we decide to remove the `getDiploma` function. If we do that, it will cause problems for canister B because it relies on that function. But it's not just removing the function that could cause issues. If we modify the function's signature to something like this:
+
+```motoko
+getDiploma(p : Principal) -> async Result.Result<Diploma, Text>;
+```
+That change alone would also break canister B's code.
+Whenever a canister on the IC is upgraded, it causes a risk to all relying canisters, and has we've said before composing services (i.e canisters) is a central piece of the vision of the Internet Computer - so we have to find a way to not break things! <br/>
+
+That's where the magic of **Candid** comes into play! <br/> 
+Candid defines a formalism and precise rules to make sure that any modification of the interface (adding new methods, changing function signatures, expecting additional arguments...) doesn't break existing clients.
+
+For instance, evolving the signature of the `getDiploma` function from 
+```motoko
+getDiploma(p : Principal) -> async ?Diploma;
+```
+to
+```motoko
+getDiploma(p : Principal, bootcampYear: ?Nat) -> async ?Diploma;
+```
+Would not cause an issue, when reading messages from old clients, who do not pass that argument, a `null` value is assumed.
+
+> In the following, all types and interfaces are exprimed in Candid format.
+
+Let's look at more examples of what can and can't be done. Imagine the following service
+```
+service counter : {
+  add : (nat) -> ();
+  subtract : (nat) -> ();
+  get : () -> (int) query;
+}
+```
+The function `add` could evolve from 
+```
+add : (nat) -> ();
+```
+to 
+```
+add : (int) -> ();
+```
+This is possible because every `nat` is also an `int`. If a client provides a `Nat` it will be compatible with the new expected type. We say that `int` is a supertype of `nat`. However evolving the other way wouldn't be possible since all `int` are not `nat`. 
+
+Additionally the function `add` and `substract` could evolve from
+```
+add : (nat) -> ();
+subtract : (nat) -> ();
+```
+to 
+```
+add : (nat) -> (new_val : nat);
+subtract : (nat) -> (new_val : nat);
+```
+This is possible because any new returned value that is not expected by old clients will simply be ignored. However, adding new (non-optional) parameters wouldn't be possible. 
+
+To safely upgrade a canister, follow those rules:
+- New methods can freely be added. 
+- Existing methods can return additional values. Old clients will simply ignore additional values.
+- Existing methods can shorten their parameter list. Old clients will send the extra argument(s) but they will be ignored.
+- Exisiting methods can only add optional types as new parameters (type `opt`). When reading messages from old clients, who do not pass that argument, a `null` value is assumed.
+- Existing parameter types may be changed, but only to a `supertype` of the previous type. For instance a `nat` parameter can be changed to a `int`. 
+- Existing result types may be changed, but only to a `subtype` of the previous type. For instance an `int` result can be changed to a `nat`. 
+
+> If you want more information on Candid, supertypes and subtypes, check the [reference guide](https://internetcomputer.org/docs/current/references/candid-ref).
+
+### Data structure changes
+Another example of how data can be lost, is by changing the data types. 
+
+```motoko
+stable var state : Int
+```
+In this example the variable `state` is `Int`, but let's imagine that during an update the type is changed to `Text`
+```motoko
+stable var state : Text
+```
+In this case the the current `Int` value will be lost. One way to avoid the data loss when changing the data types is to keep the original variable, and create a new variable for the new data type. This way the original data will not be lost due to canister upgrades.
+### Stable type signature
+The list of all stable variables of an actor is called the **stable signature**. The textual representation of the **stable signature** looks similar to an actor declaration.
+```motoko
+actor {
+  stable x : Nat;
+  stable var y : Int;
+  stable z : [var Nat];
+};
+```
+> The stable signature of an actor can be generated using the Motoko compiler: [moc](https://internetcomputer.org/docs/current/motoko/main/compiler-ref).
+
+The stable signature is used to automatically check type compability before an upgrade. This is possible by comparing the signature of the new actor with the old one and using some rules based on Candid. For more information, see the [reference section on stable signatures](https://internetcomputer.org/docs/current/motoko/main/upgrades#stable-type-signatures).
+### Metadata section
+The Motoko compiler embeds the **Candid interface** and **stable signature** of a canister as canister metadata, recorded in additional Wasm custom sections of a compiled binary.
+
+This metadata can be selectively exposed by the IC and used by tools such as `dfx` to verify upgrade.
+```
+$ dfx canister metadata [OPTIONS] <CANISTER_NAME> <METADATA_NAME>
+```
+###  Verifying upgrade compatibility
+When you upgrade a canister, `dfx` will automatically download the metadata of the old module and compare it with the new module:
+- Compare the Candid interface to make sure there is no breaking change.
+- Compare the stable signatures to make sure there won't be data loss.
+
+If you are making a breaking change you will receive a warning. 
+
+<p align="center"> <img src="./img/candid_warning.png" width="800px" style="border: 2px solid black;"></p>
+<p align="center"> The type of warning you will encounter. </p>
+
+This verification doesn't guarantee that the upgrade will go through. A problem can still happen during the upgrade process. However, it does guarantee that if the upgrade goes through you won't break existing cliens or lose data that was marked as `stable`. 
