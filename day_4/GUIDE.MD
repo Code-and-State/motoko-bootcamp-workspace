@@ -1,7 +1,5 @@
 # Day 4️⃣
 - Intercanister call (basic)
-
-
 ## 👦 Identity 
 ### Username & passwords.
 Identity is at the core of our digital lives. In the rapidly evolving world of the internet, it has become more important than ever to have secure and trustworthy methods of accessing our personal accounts and spaces. <br/>
@@ -152,8 +150,6 @@ $ dfx identity get-principal
 > There actually exist [two other types of principals](https://internetcomputer.org/docs/current/references/ic-interface-spec#id-classes) which you will never encounter. Those are used internally by the protocol or reserved for future potential usages. 
 
 Principals in Motoko are a primitive type called `Principal`. 
-
-
 ### Getting a user principal
 Within your actor, you can access the principal of the person calling your function by adding the `shared (message)` syntax. This keyword needs to be placed immediately before the `func` keyword and after the `public` keyword. This allows you the inspect the message. 
 The message as a property `caller` that you can access by using `message.caller`. This property corresponds to the principal of the entity (user or canister) calling the function.
@@ -196,6 +192,58 @@ actor {
     };
 };
 ```
+### Inter-canister call
+As we've already said before, composing services (i.e canisters) is central to the vision of the Internet Computer. This means that we should be able to call other canisters from within a canister. This feature is called **inter-canisters calls**.
+There are differents way to realize **inter-canister calls**.
+
+#### By actor reference
+To call any service on the Internet Computer: 
+1. Find the canister signature of the canister you want to call: go to [ICScan](https://icscan.io/), enter the canister id and click on **view did file**. Then go to the Motoko file. The canister signature is the list of public methods for this canister. You will find it under `Self` or `Service`. 
+
+[TODO : ADD SCRENSHOOT]
+
+2. Once you've found the signature. You can use it in your code to create an actor reference. 
+For instance for the ledger:
+```motoko
+let ledger : actor {
+    // Paste the canister signature here. You will also have to define the types used.
+    account_balance : shared query BinaryAccountBalanceArgs -> async Tokens;
+    account_balance_dfx : shared query AccountBalanceArgs -> async Tokens;
+    archives : shared query () -> async Archives;
+    decimals : shared query () -> async Decimals;
+    icrc1_balance_of : shared query Account -> async Nat;
+    icrc1_decimals : shared query () -> async Nat8;
+    icrc1_fee : shared query () -> async Nat;
+    icrc1_metadata : shared query () -> async [(Text, Value)];
+    icrc1_minting_account : shared query () -> async ?Account;
+    icrc1_name : shared query () -> async Text;
+    icrc1_supported_standards : shared query () -> async [StandardRecord];
+    icrc1_symbol : shared query () -> async Text;
+    icrc1_total_supply : shared query () -> async Nat;
+    icrc1_transfer : shared TransferArg -> async Result;
+    name : shared query () -> async Name;
+    query_blocks : shared query GetBlocksArgs -> async QueryBlocksResponse;
+    send_dfx : shared SendArgs -> async Nat64;
+    symbol : shared query () -> async Symbol;
+    transfer : shared TransferArgs -> async Result_1;
+    transfer_fee : shared query {} -> async TransferFee;
+} = actor("ryjl3-tyaaa-aaaaa-aaaba-cai"); 
+```
+
+3. Now that we have instantiated the `ledger`, we can use any of the public method available.
+For instance, if we want to get the name of the token.
+```motoko
+let nameToken = await ledger.name();
+```
+In step 2, when defining our actor reference, it's sufficient to define only the functions that we plan to use. This improves code readability. For example, if we're only using the name function for the ledger, we could define it in a single line.
+
+```motoko
+let ledger : actor { name : shared query () -> async Name } = actor ()
+```
+
+#### Importing from another canister (locally)
+#### Importing from another canister (mainnet)
+
 ### Cross-dApp communication
 When a user registers into a new application using Internet Identity a new identity for this app is generated. The identity is a self-authenticating id. One of the parameter that is used to randomly determines the principal id is the frontend host (i.e what is the domain that the user is connecting from). This means that if you are connecting on different services over Internet Identity, those services will authenticate you with a different id. This is extremly important to avoid tracking users across applications and increase privacy! 
 
@@ -422,7 +470,7 @@ Suppose we're upgrading canister A and we decide to remove the `getDiploma` func
 getDiploma(p : Principal) -> async Result.Result<Diploma, Text>;
 ```
 That change alone would also break canister B's code.
-Whenever a canister on the IC is upgraded, it causes a risk to all relying canisters, and has we've said before composing services (i.e canisters) is a central piece of the vision of the Internet Computer - so we have to find a way to not break things! <br/>
+Whenever a canister on the IC is upgraded, it causes a risk to all relying canisters, we have to find a way to not break things! <br/>
 
 That's where the magic of **Candid** comes into play! <br/> 
 Candid defines a formalism and precise rules to make sure that any modification of the interface (adding new methods, changing function signatures, expecting additional arguments...) doesn't break existing clients.
