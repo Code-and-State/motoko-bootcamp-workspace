@@ -1,4 +1,9 @@
 # Day 5️⃣
+- Account Identifier
+- Packages with Vessel & Mops
+- Intercanister calls (Commit point)
+- Add how to throw an Error with the Error library.
+
 ## 🎰 Randomness
 Providing randomness to canisters on the Internet Computer is tricky: all computations perfomed by nodes needs to be deterministic; if one or multiple node(s) would diverge and compute a different result at any round, we would be at risk of breaking the consensus! 
 
@@ -207,5 +212,148 @@ The call to `giveAndTake` should return a tuple of `Nat` where the sum equals th
 $ dfx canister call Experiment giveAndTake '(1000, 100)'
 (100 : nat, 900 : nat)
 ```
+## 🧮 Binary operations
+Motoko supports Bitwise operations (manipulation of the bits) through bounded integers (`Nat8`,`Nat16`, `Nat32`, `Nat64` & `Int8`,`Int16`, `Int32`, `Int64`).
+- AND (Symbol `&`): This operation takes two binary values and performs a logical AND operation on each pair of corresponding bits. The result is a binary value where each bit is set to 1 only if the corresponding bits in both operands are set to 1.
+```motoko
+let a = 31 : Nat8;  // Binary 0011111
+let b = 33  : Nat8; // Binary 0100001
+let c = a & b (1)  // Binary 0000001 
+assert(c == 1) // true
+```
+- OR (Symbol `|` ): This operation takes two binary values and performs a logical OR operation on each pair of corresponding bits. The result is a binary value where each bit is set to 1 if either or both corresponding bits in the operands are set to 1.
+```motoko
+let a = 31 : Nat8;  // Binary 0011111
+let b = 33  : Nat8; // Binary 0100001
+let c = a | b (63)  // Binary  0111111
+```
+- XOR (Symbol `^`): This operation takes two binary values and performs a logical XOR (exclusive OR) operation on each pair of corresponding bits. The result is a binary value where each bit is set to 1 if only one of the corresponding bits in the operands is set to 1.
+```motoko
+let a = 31 : Nat8;  // Binary 0011111
+let b = 33  : Nat8; // Binary 0100001
+let c = a ^ b (62)  // Binary  0111110
+```
+- Shift Left (Symbol `<<`): This operations moves the bits to the left by a specified number of positions, adding zeros to the right.
+```motoko
+let a = 64 : Nat8; //    binary 01000000
+let c = a << 1 (128) //  binary 10000000 
+```
+- Shift right (Symbol `>>`): This operations moves the bits to the right by a specified number of positions, adding zeros to the left.
+```motoko
+let a = 64 : Nat8; //    binary  01000000
+let c = a << 1 (32) //   binary  00100000
+```
+- Rotation left (Symbol `<<>`): This operations shifts the bits of a binary value to the left by a specified number of positions, and then rotating the shifted bits back to the right end of the value.
+```motoko
+let a = 128 : Nat8;     //  binary  1000000
+a <<> 1 (1)             //  binary  0000001 
+```
+- Rotation right (Symbol `<>>`): This operations shifts the bits of a binary value to the right by a specified number of positions, and then rotates the shifted bits back to the left end of the value. 
+```motoko
+let a = 64 : Nat8;      // binary 001000000
+a <>> 1 (32)            // binary 000100000
+```
 
-> 🔧 
+## ⚛️ Atomicity 
+> Atomicity is a property of database transactions, which states that a transaction must be treated as a single, indivisible operation that is either completed in its entirety or not executed at all. This means that all of the changes made within a transaction must be committed to the database together, or none of them should be committed.
+
+When a canister receives a message, the execution is atomic which means that other messages will be queued and processed later - the canister is focused on executing the code corresponding to the message. This is a really useful property that directly ensues from the [Actor model](https://en.wikipedia.org/wiki/Actor_model#:~:text=The%20actor%20model%20in%20computer,building%20block%20of%20concurrent%20computation.). It prevents race conditions, or unexpected state changes. <br/>
+
+```motoko
+actor Bank {
+
+    var balance : Nat = 100;
+
+    public query func checkBalance() : async Nat {
+        return balance;
+    };
+
+    public func pay(amount : Nat) : async Nat {
+        if(balance > amount){
+            balance := balance - amount;
+        };
+        return balance;
+    };
+
+};
+```
+
+For instance, when calling `pay` we can be sure that no other message will modify the value of `balance` while the code is executing. However, as soon as the body of the function being executed contains an `await`, atomicity is not guaranteed anymore! <br/> Whenever a canister `await` it can process other messages during the waiting period before resuming the code where it stopped.
+Let's imagine that we have a second actor `Restaurant`. This actor has the following flow: 
+1. Check the balance of `account` by calling the `Bank` actor.
+2. Prepare the sandwich 
+3. Request the payment.
+```motoko
+actor Restaurant {
+
+    let priceSandwich : Nat = 5;
+
+    let bank : actor {
+        checkBalance : () -> query nat; 
+        pay : (amount : nat) -> async nat;
+    };
+
+    public func prepareSandwich() : async Text {
+        return("🥪");
+    };
+
+    public func getSandwich() : async Text {
+        let balance = await bank.checkBalance();
+        if(balance >= priceSandwich) {
+            let sandwich = await prepareSandwich();
+            let remaining = await pay(5);
+            return sandwich;
+        } else {
+            return ("Looks like you don't have enough funds!");
+        }
+    };
+};
+```
+The code has a fundamental flaw because the `getSandwich` method is not atomic. This means that when the first check occurs, the account balance could be higher than `5`. However, between that check and the moment when the payment is actually made, the `Bank` actor may receive and process other messages that change the account `balance`. As a result, the payment may become impossible, even if it initially appeared that there were sufficient funds available.
+
+> Non-atomicity, if not properly treated, introduces a lot of security issues. When dealing with such situations it is best to always assume that after any `await` the state of the canister could be completely different than initially!
+## 💾 Commit point 
+A **commit point** is a precise moment where the state changes made to the actor are commited and made visible to other actors or users. It usually corresponds to a specific line of code.
+
+The moments where the state changes are commited are:
+- Exit from a shared function by sending a result.
+- Exit from a shared function via `return` or `throw` expressions.
+- `await` expression.
+
+```motoko
+import Array "mo:base/Array";
+import Error "mo:base/Error";
+import Buffer "mo:base/Buffer";
+actor Commit {
+    var stateCommits = Buffer.Buffer<Text>(0);
+
+    public query func seeCommits() : async [Text] {
+        return Buffer.toArray(stateCommits);
+    };
+
+    public func commitReturn() : async () {
+        stateCommits.add("commitReturn");
+        return; // 💾 - commit point 
+    };
+
+    public func commitThrow() : async () {
+        stateCommits.add("commitThrow");
+        throw(Error.reject("An error occured")); // 💾 - commit point 
+    };
+
+    public func noCommitTrap() : async () {
+        stateCommits.add("noCommitTrap");
+        ignore 0/0; // 🙅‍♂️ trap - will roll back all state changes! 
+    };
+
+  public func commitNonAtomic() : async () {
+    stateCommits.add("commitNonAtomic1");
+    let f = commitReturn(); 
+    stateCommits.add("commitNonAtomic2");
+    await f; // this will commit state changes
+    stateCommits.add("commitNonAtomic3");
+    ignore 0/0; // 🙅‍♂️ trap - will roll back all state changes until the previous commit point! 
+  };
+};
+```
+If we call `atomicCommit`, everything happens as expected. The message is processed, and whenever the function exit 
