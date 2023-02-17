@@ -3,6 +3,18 @@
 - [ ] Create & add illustrations missings.
 - [ ] Add introduction to each day.
 - [ ] Day 6
+    - Motoko: HTTP Outcalls.
+    - Testing
+    - Certified variables
+    - A guide to multi-canister architecture on the Internet Computer (→ Who need a lot of inputs from different projects and even DFINITY).
+    - How to scale?
+    - Actor classes & the IC management interface.
 - [ ] Day 7
+    - A few security concerns and best practices.
+    - Message inspection & rejection.
+    - Motoko: Bitcoin API.
+    - Features in the roadmap: composite queries, high-reply subnet…
+    - What to do after Motoko Bootcamp and how to stay involved in the ecosystem?
+    - A general guide to entrepreneurship and person to follow in the ecosystems.
 - [ ] Add challenges directly into guides.
 - [ ] Grammar & orthograph verification.
