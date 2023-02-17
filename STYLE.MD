@@ -1,3 +1,11 @@
-- Every term that is **strong** shouldn't be translated
+- Every term that is **strong** shouldn't be translated (For translators)
     - **canister**
     - **The Internet Computer**
+    - **actor**
+    - **query**
+    - **update**
+    - [All motoko keywords](https://internetcomputer.org/docs/current/motoko/main/language-manual#keywords)
+
+- Every section starts by a H2 title with an emoji.
+- > Challenges are made visible using the comment symbol.
+- Respect Motoko style guidelines for all code samples.
