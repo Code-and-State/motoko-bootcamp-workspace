@@ -1,6 +1,6 @@
 # Day 1️⃣
 -  ✍️Comments
-- ⛽️ Cycles 
+-   Errors (Basic)
 ## Welcome to the Motoko Bootcamp 🏕️
 [TODO]
 ## Objectives of the day 

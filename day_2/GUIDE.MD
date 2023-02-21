@@ -1,10 +1,5 @@
 # Day 2️⃣
-- Union type
-- Intersection type
-- Control flow
-- Errors 
-
-- ⛽️ Cycles 
+- Cycles 
 ## Objectives of the day 
 - Understand what is the **Base** library, how to use it, and where to find the source code.
 - Motoko: how to use the **Debug** module to test your code locally.
@@ -31,7 +26,8 @@
 ### Section 8: Object & custom type
 ### Section 9: Variants
 ### Section 10: Result type
-### Section 11: Overview of the NNS.
+### Section 11: Cycles.
+### Section 12: Overview of the NNS.
 ## 📚 Base library
 Yesterday, we've only looked at operations that are built-in to the language. To perform more complex operations, we'll need to import and use modules, especially those from the [Base library](https://internetcomputer.org/docs/current/motoko/main/base/).
 
@@ -397,8 +393,10 @@ let n = 38;
 assert n % 2 == 0; // traps when n not even
 assert(false);  // always traps
 ```
-## 🧠 Network Nervous System (NNS)
 
+## ⛽️ Cycles 
+[TODO]
+## 🧠 Network Nervous System (NNS)
 <p align="center"> <img src="./img/nns_home.png" width="800px" style="border: 2px solid black;"> </p>
 <p align="center"> Home page of the NNS</p>
 
@@ -428,7 +426,6 @@ The proposals that can be voted on by the **NNS** (**Network Nervous System**) a
 
 To learn more about the incredible power of the NNS, check out the [Internet Computer Wiki](https://wiki.internetcomputer.org/wiki/Network_Nervous_System).
 
-## 🔎 How does the NNS work?
 The NNS is constitued of **different canisters**. Each canister is deployed on the same subnet which is also called the [NNS subnet](https://dashboard.internetcomputer.org/subnet/tdb26-jop6k-aogll-7ltgs-eruif-6kk7m-qpktf-gdiqx-mxtrf-vb5e6-eqe).
 
 <p align="center"> <img src="./img/nns_recap.png" width="800px" style="border: 2px solid black;"> </p>
@@ -438,7 +435,6 @@ The NNS is constitued of **different canisters**. Each canister is deployed on t
 - 🏛️ [Governance](https://icscan.io/canister/rrkah-fqaaa-aaaaa-aaaaq-cai): This canister is responsible for keeping track of neurons, proposals & votes and ultimately taking actions when the proposals are accepted or rejected.
 - 🏭[Registry](https://icscan.io/canister/rwlgt-iiaaa-aaaaa-aaaaa-cai): This canister is responsible for storing and modifying the configuration of the Internet Computer (Adding or removing nodes, adding or removing subnets, storing public keys of subnets, assign nodes to subnets, storing canister ids and which subnet they belong to....)
 - 🪟 [NNS-UI](https://icscan.io/canister/qoctq-giaaa-aaaaa-aaaea-cai): This canister is responsible for storing the official interface that gives users a way to interact with the 3 others canisters. 
-
 
 > **NNS-UI** is the main interface for interacting with the **NNS**, but other user-friendly interfaces can be created. The community has already created an [interface that allows proposal creation without using a terminal](https://nnsproposal.icp.xyz/), a missing feature in the main **NNS-UI**.
 

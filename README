@@ -1,22 +1,21 @@
 # Motoko Bootcamp (Beginner)
-
-- [ ] Consistent styling. 
+# Goals
+# Structure 
+# Styling rules
+- Every term that is **strong** shouldn't be translated.
+    - **canister**
+    - **The Internet Computer**
+    - **actor**
+    - **query**
+    - **update**
+    - [All motoko keywords](https://internetcomputer.org/docs/current/motoko/main/language-manual#keywords)
+- Every section starts by a H2 title with an emoji.
+- Challenges are made visible using the 🎮 symbol.
+- Respect [Motoko style guidelines](https://internetcomputer.org/docs/current/motoko/main/style#:~:text=Motoko%20requires%20that%20all%20expressions,ignore%20when%20it's%20not%20needed.&text=Motoko%20allows%20to%20omit%20the,evaluates%20to%20its%20last%20expression.) for all code samples.
+# Todo
 - [ ] Create & add illustrations missings.
-- [ ] Add introduction to each day.
-- [ ] Day 6
-    - Motoko: HTTP Outcalls.
-    - Testing
-    - Certified variables
-    - A guide to multi-canister architecture on the Internet Computer (→ Who need a lot of inputs from different projects and even DFINITY).
-    - How to scale?
-    - Actor classes & the IC management interface.
-- [ ] Day 7
-    - A few security concerns and best practices.
-    - Message inspection & rejection.
-    - Motoko: Bitcoin API.
-    - Features in the roadmap: composite queries, high-reply subnet…
-    - What to do after Motoko Bootcamp and how to stay involved in the ecosystem?
-    - A general guide to entrepreneurship and person to follow in the ecosystems.
-    - Recruiting agency via Code & State.
+- [ ] Complete the `TODO` section.
+- [ ] Add introduction to each day and backstory.
 - [ ] Add challenges directly into guides.
 - [ ] Grammar & orthograph verification.
+
