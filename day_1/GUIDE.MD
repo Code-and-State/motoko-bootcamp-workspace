@@ -47,9 +47,7 @@
 ### Section 11: Our first project.
 ### Section 12: Interacting with a canister from the CLI.
 ### Section 13: Interacting with a canister from the Candid UI.
-### Section 14: Useful tools
-- Motoko Playground
-- Candid UI
+### Section 14: Using the Motoko Playground for testing code snippets.
 ### Section 15: What is a DAO? Unlocking the power of DAOs with canisters.
 ## 👻 WebAssembly and why do we need Motoko? 
 Before we dive into **Motoko** - we actually need to explain another term: **WebAssembly**. <br/>
