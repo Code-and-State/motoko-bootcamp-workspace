@@ -1,11 +1,8 @@
 # Day 1️⃣
 -  ✍️Comments
 - ⛽️ Cycles 
-
 ## Welcome to the Motoko Bootcamp 🏕️
 [TODO]
-
-
 ## Objectives of the day 
 - Understand what is a canister and how it relates to the concept of an actor.
 - Understand the concept of cycles & being able to top-up a canister.
@@ -20,47 +17,41 @@
 - What is WAT?
 - Why do we need another language?
 - Background & context information about Motoko.
-### Section 2: What is a canister exactly?
+### Section 2: What is a canister?
 - Technical explanation (Module & State)
 - Messages
 - The actor model.
-- What is an actor?
-    - Keyword in `main.mo`
-    - Actor model
-    - Update vs Query call.
-
-### Section 3: Motoko: variables, types & functions.
+### Section 3: What is an actor?
+- Keyword in `main.mo` and how canister/actor are related.
+- Actor model
+- Update vs Query call.
+### Section 4: Variables
 - Variables
-    - `let`
-    - `var`
-- Primitives types
-    - Nat
-    - Int
-    - Bool
-- Motoko: Control flow & operators.
-    - `If/else`
-    - `for/while`
-    - `switch`
-- Motoko: Functions
-    - Function signature and `func` keyword.
-    - What does `async` represent?
-    - Difference between `public` & `private` func.
-- Errors in Motoko.
-    - Type
-    - Syntax
-    - Trap
-### Section 4: What is Candid and why do we need it?
-- What is an IDL and the reasoning for Candid.  
-- Candid file (.did)
-### Section 5: How to interact with a canister (1st mini project)?
+    - Variable declarations
+    - Difference between `let` & `var`.
+### Section 5: Types
+- Motoko is a typed language.
+- Type declaration and type casting by the language.
+### Section 6: Nat
+### Section 7: Int
+### Section 8: Bool
+### Section 9: Functions
+- Function signature and `func` keyword.
+- What does `async` represent?
+- Difference between `public` & `private` func.
+### Section 10: What is Candid and why do we need it?
+- Why do we need Candid? (Rust vs Motoko canisters)
+- What is an IDL?
+- The Candid file (.did)
+- A candid type: `nat` 
+### Section 11: Our first project.
 - Overview of the diffent files from the template project.
-- CLI
-- Candid UI
-### Section 6: Useful tools
+## Section 12: Interacting with a canister from the CLI.
+## Section 13: Interacting with a canister from the Candid UI.
+### Section 14: Useful tools
 - Motoko Playground
 - Candid UI
-### Section 7: What is a DAO? Unlocking the power of DAOs with canisters.
-
+### Section 15: What is a DAO? Unlocking the power of DAOs with canisters.
 ## 👻 WebAssembly and why do we need Motoko? 
 Before we dive into **Motoko** - we actually need to explain another term: **WebAssembly**. <br/>
 
@@ -81,7 +72,6 @@ The main benefits of using **WebAssembly** are:
 
 - **WebAssembly** is fast. It's a language that is very close to machine language and has been optimised for speed and performance. You can use it for creating complex and intensive applications (Games, simulations, graphic)! 
 - **WebAssembly** provides a secure execution environment, by putting the code in a special area called a **sandbox**. The **sandbox** makes sure that the program is only able to do things and access resources that is has been granted access to and doesn't allow it to access sensitive informaiton. This helps a lot when trying to write secure code or for users to make sure they won't get harmed by the code running on their machine!  
-
 
 **WAT** (**WebAssembly Text Format**) is a human-readable representation of **WebAssembly** code. It's an alternative to the binary format that **WebAssembly** code is usually stored in, and it provides a more accessible way of reading and writing **WebAssembly** code. **WAT** code is written in a simple text format and it can be easily edited and manipulated using a text editor. This makes it easier for developers to understand and debug **WebAssembly** code, as they can see exactly what the code is doing in a format that they're familiar with.
 
@@ -415,53 +405,6 @@ let result = not false;     //true
 ```
 
 > The `==` operator is very different from the `=` operator. The first will test if two values are equal while the later will asign a value to a variable.
-
-## 🕹️ Control flow 
-Control flow refers to how a program runs and the order that it follows. It decides which statements, instructions or function calls are executed and in what order, based on conditions or decisions made during the run time.
-
-In Motoko, we find the common control flow operators:
-
-- `if`/ `else`: these allow the program to make a decision and execute a certain block of code only if a specific condition is met. The optional else statement provides an alternative if the condition is not met.
-```motoko
-    func is_even(n : Nat) : Bool {
-        if(n % 2 == 0){
-            return true
-        } else {
-            return false
-        };
-    };
-```
-In many cases the `else` block can be removed without modyfing the behavior of the code block:
-```motoko
-    func is_even(n : Nat) : Bool {
-        if(n % 2 == 0){
-            return true;
-        };
-        return false;
-    };
-```
-- **Loops**: these allow a block of code to be executed repeatedly until a specific condition is met. There are several types of loops, including `for` loops & `while` loops. 
-
-    - `for` loops in Motoko involves using an iterator of type `Iter`. If you are not familiar with `Iter`, don't worry it's a concept that we will explain later on. 
-
-        ```motoko
-        var count : Nat = 0;
-        let i = Iter.range(0, 10);
-        for (x in i) {
-            count += 1;
-        };
-        ```
-
-    - We can also use `while` loops.
-
-        ```motoko
-        var count : Nat = 0;
-        while (count < 10) {
-            count += 1;
-        };
-        ```
-There are other ways to do control flow in Motoko with instruction such as `do?`or with `switch` that we see later on. 
-
 ## ⚙️ Function
 Here is an actor that is responsible to keep track of a counter. 
 ```motoko
@@ -526,7 +469,6 @@ Can be replaced by the following syntax
 ```motoko
 count += 1;
 ```
-
 The reduced version of the code would look like this:
 ```motoko
 actor Counter {
@@ -542,71 +484,6 @@ actor Counter {
     };
 }
 ```
-## ❌ Errors
-[TODO: ADD LINE INDICATION] <br/>
-Sometimes things go wrong - that's life! <br/> Fortunately, in most cases reading the error message carefuly will be enough to identify & resolve the error. 
-There are different types of errors in Motoko:
-
-- **Type error**: this is probably the most common type. This happens when your program in expecting **type X** and you're providing **type Y**. 
-
-For instance the following code wouldn't compile and would throw a **type error**:
-```motoko
-actor {
-    var name : Text = "Motoko";
-
-    public func changeName(newName : Text) : async Nat {
-        name := new_name;
-        return name;
-    };
-}
-```
-
-We are indicating that the return type of `changeName` is a `Nat` but we are returning `name` which is of type `Text`. 
-In this case, the compiler will indicate:
-```motoko
-expression of type
-  Text
-cannot produce an expected type
-  Nat
-```
-
-- **Syntax error**: this happens when there is an error in the way you wrote your code - such as:
-    - Forgetting a symbol: `+`, `-`, `;`...
-    - Forgetting a keyword: `actor`, `func`, `return`, `var`, `let`...
-    - Mispelling a variable name.
-
-For instance if we forget one bracket `{` to close the body of the function:
-
-The following code would return an error
-```motoko
-actor {
-    var name : Text = "Motoko";
-    public func changeName(newName : Text) : async Nat {
-        name := new_name;
-        return name
-}
-```
-`syntax error [M0001], unexpected end of input, expected one of token or <phrase> sequence: }`
-
-- Trap: A trap is like a "time-out" for your code. Contrary to the two previous errors that are detected at compile time, a trap is an error that happens during execution, and when it does, the program will stop and give you an error message, indicating that something went wrong. A few examples are:
-    - Division by 0. 
-    ```motoko
-    let a : Nat = 5;
-    let b : Nat = 0;
-    let c = a / b;
-    ```
-    - Accessing an index out of bounds 
-    ```motoko
-    let words : [Text] = ["table", "boat, "ghost"];
-    let word : Text = words[4];
-    ```
-    - Assertion failure.
-    ```motoko
-    assert(false)
-    ```
-
-> Trapping will only stop the execution of the current message and not prevent the canister from answering subsequent requests.
-
 ## 👽 What is Candid and why do we need it? 
 Let's imagine the following situation:
 
