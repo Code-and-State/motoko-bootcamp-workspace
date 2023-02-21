@@ -1,5 +1,6 @@
 # Day 3️⃣
-- List?
+- List
+- Error (Module via `throw`)
 
 ## 🗃️ Arrays
 In Motoko, an array of type `Array` is a group of **similar** elements that are stored together. To create an array, one must specify the types of elements that the array will contain. 

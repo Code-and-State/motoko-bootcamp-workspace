@@ -1,7 +1,5 @@
 # Day 5️⃣
-- Account Identifier
 - Packages with Vessel & Mops
-- Intercanister calls (Commit point)
 - Add how to throw an Error with the Error library.
 
 ## 🎰 Randomness
@@ -320,6 +318,7 @@ The moments where the state changes are commited are:
 - Exit from a shared function via `return` or `throw` expressions.
 - `await` expression.
 
+An important thing to note is that `trap` will roll back all state changes until the latest commit point! 
 ```motoko
 import Array "mo:base/Array";
 import Error "mo:base/Error";
@@ -356,4 +355,52 @@ actor Commit {
   };
 };
 ```
-If we call `atomicCommit`, everything happens as expected. The message is processed, and whenever the function exit 
+If we call `atomicCommit`: the message is processed, and whenever the function exits by `return` the state changes are commited.
+```motoko
+$ dfx canister call Commit commitReturn
+()
+```
+That means that if we call `seeCommits` just after we can see the message added to the `Buffer`.
+```motoko
+$ dfx canister call Commit seeCommits
+(vec { "commitReturn" })
+```
+The same situation will happen with `commitThrow` but instead of a nice `return` we will receive an `error`.
+```motoko
+$  dfx canister call Commit commitThrow
+Error: Failed update call.
+Caused by: Failed update call.
+The Replica returned an error: code 4, message: "An error occured"
+```
+But the state changes are still commited.
+```motoko
+$ dfx canister call Commit seeCommits
+(vec { "commitReturn"; "commitThrow" })
+```
+However, the situation is completely different with `noCommitTrap`
+```motoko
+dfx canister call Commit noCommitTrap
+Error: Failed update call.
+Caused by: Failed update call.
+The Replica returned an error: code 5, message: "Canister rrkah-fqaaa-aaaaa-aaaaq-cai trapped: integer division by 0"
+```
+We cannot see any state changes, indeed they have been rolled back because of the `trap`! 
+```motoko
+$ dfx canister call Commit seeCommits
+(vec { "commitReturn"; "commitThrow" })
+````
+Earlier, we mentioned that changes to the state are not committed with a `trap`. However, this is only true until the latest commit point. When a non-atomic function with multiple `awaits` is used, a `trap` will only undo changes made since the last await. Any changes made before that point will have already been committed and cannot be undone. <br/>
+We can see this behaviour in action by calling `commitNonAtomic` 
+```motoko
+$ dfx canister call Commit commitNonAtomic
+Error: Failed update call.
+Caused by: Failed update call.
+The Replica returned an error: code 5, message: "Canister rrkah-fqaaa-aaaaa-aaaaq-cai trapped: integer division by 0"
+```motoko
+The state changes that happened between the entry point of the function and the `await` can still be visible after the `trap`.
+$ dfx canister call Commit seeCommits
+( vec { "commitReturn"; "commitThrow"; "commitNonAtomic1"; "commitNonAtomic2"; "commitReturn";},)
+```
+
+## 🆚  Principal vs Account Identifier
+## 

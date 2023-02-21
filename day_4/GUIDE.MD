@@ -1,5 +1,4 @@
 # Day 4️⃣
-- Intercanister call (basic)
 ## 👦 Identity 
 ### Username & passwords.
 Identity is at the core of our digital lives. In the rapidly evolving world of the internet, it has become more important than ever to have secure and trustworthy methods of accessing our personal accounts and spaces. <br/>
