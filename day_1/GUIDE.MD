@@ -41,10 +41,10 @@
     - `If/else`
     - `for/while`
     - `switch`
-- Motoko:
-    - Function.
-    - `async`
-    - Public / Private.
+- Motoko: Functions
+    - Function signature and `func` keyword.
+    - What does `async` represent?
+    - Difference between `public` & `private` func.
 - Errors in Motoko.
     - Type
     - Syntax
@@ -61,7 +61,7 @@
 - Candid UI
 ### Section 7: What is a DAO? Unlocking the power of DAOs with canisters.
 
-## 👻 Introduction to the Motoko language 
+## 👻 WebAssembly and why do we need Motoko? 
 Before we dive into **Motoko** - we actually need to explain another term: **WebAssembly**. <br/>
 
 <p align="center"> <img src="./img/motoko_banner.png" width="600px" style="border: 1px solid black;"/> </p>
