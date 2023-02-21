@@ -5,6 +5,62 @@
 ## Welcome to the Motoko Bootcamp 🏕️
 [TODO]
 
+
+## Objectives of the day 
+- Understand what is a canister and how it relates to the concept of an actor.
+- Understand the concept of cycles & being able to top-up a canister.
+- Understand the difference between update & query calls.
+- Being comfortable deploying and managing canisters through dfx.
+- Understand what is Candid & how to use the Candid UI to interact with your API.
+- Understand that Motoko is a typed language and become familiar with the basic types: `Nat`, `Bool` & `Text`
+- Understand the differences between `let` & `var`.
+## Structure of the day
+### Section 1: WebAssembly and why do we need Motoko?
+- A high-level view of what is WebAssembly.
+- What is WAT?
+- Why do we need another language?
+- Background & context information about Motoko.
+### Section 2: What is a canister exactly?
+- Technical explanation (Module & State)
+- Messages
+- The actor model.
+- What is an actor?
+    - Keyword in `main.mo`
+    - Actor model
+    - Update vs Query call.
+
+### Section 3: Motoko: variables, types & functions.
+- Variables
+    - `let`
+    - `var`
+- Primitives types
+    - Nat
+    - Int
+    - Bool
+- Motoko: Control flow & operators.
+    - `If/else`
+    - `for/while`
+    - `switch`
+- Motoko:
+    - Function.
+    - `async`
+    - Public / Private.
+- Errors in Motoko.
+    - Type
+    - Syntax
+    - Trap
+### Section 4: What is Candid and why do we need it?
+- What is an IDL and the reasoning for Candid.  
+- Candid file (.did)
+### Section 5: How to interact with a canister (1st mini project)?
+- Overview of the diffent files from the template project.
+- CLI
+- Candid UI
+### Section 6: Useful tools
+- Motoko Playground
+- Candid UI
+### Section 7: What is a DAO? Unlocking the power of DAOs with canisters.
+
 ## 👻 Introduction to the Motoko language 
 Before we dive into **Motoko** - we actually need to explain another term: **WebAssembly**. <br/>
 
