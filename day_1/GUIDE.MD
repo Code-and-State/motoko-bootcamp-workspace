@@ -45,9 +45,8 @@
 - The Candid file (.did)
 - A candid type: `nat` 
 ### Section 11: Our first project.
-- Overview of the diffent files from the template project.
-## Section 12: Interacting with a canister from the CLI.
-## Section 13: Interacting with a canister from the Candid UI.
+### Section 12: Interacting with a canister from the CLI.
+### Section 13: Interacting with a canister from the Candid UI.
 ### Section 14: Useful tools
 - Motoko Playground
 - Candid UI
