@@ -1,47 +1,6 @@
-## 🕹️ Control flow 
-Control flow refers to how a program runs and the order that it follows. It decides which statements, instructions or function calls are executed and in what order, based on conditions or decisions made during the run time.
-In Motoko, we find the common control flow operators:
 
-- `if`/ `else`: these allow the program to make a decision and execute a certain block of code only if a specific condition is met. The optional else statement provides an alternative if the condition is not met.
-```motoko
-    func is_even(n : Nat) : Bool {
-        if(n % 2 == 0){
-            return true
-        } else {
-            return false
-        };
-    };
-```
-In many cases the `else` block can be removed without modyfing the behavior of the code block:
-```motoko
-    func is_even(n : Nat) : Bool {
-        if(n % 2 == 0){
-            return true;
-        };
-        return false;
-    };
-```
-- **Loops**: these allow a block of code to be executed repeatedly until a specific condition is met. There are several types of loops, including `for` loops & `while` loops. 
 
-    - `for` loops in Motoko involves using an iterator of type `Iter`. If you are not familiar with `Iter`, don't worry it's a concept that we will explain later on. 
 
-        ```motoko
-        var count : Nat = 0;
-        let i = Iter.range(0, 10);
-        for (x in i) {
-            count += 1;
-        };
-        ```
-
-    - We can also use `while` loops.
-
-        ```motoko
-        var count : Nat = 0;
-        while (count < 10) {
-            count += 1;
-        };
-        ```
-There are other ways to do control flow in Motoko with instruction such as `do?`or with `switch` that we see later on. 
 
 ## ❌ Errors
 [TODO: ADD LINE INDICATION] <br/>

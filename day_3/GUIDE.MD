@@ -1,6 +1,8 @@
 # Day 3️⃣
 - List
 - Error (Module via `throw`)
+- Union type
+- Intersection type
 
 ## 🗃️ Arrays
 In Motoko, an array of type `Array` is a group of **similar** elements that are stored together. To create an array, one must specify the types of elements that the array will contain. 
@@ -16,9 +18,7 @@ Contrary to other programming languages which might be more flexible in that reg
 ```motoko
 let array : [Nat] = [14, 16, 32, 25, "Motoko"];
 ```
-
 <p align="center"> <img src="./img/array.png" width="600px" style="border: 2px solid black;"></p>
-
 To access a specific element within an array, we use its index. Keep in mind that arrays in Motoko are zero-indexed, which means that the first element is at position 0, the second element is at position 1, and so on. For example, to access the first element of an array named `myArray`, we would use `myArray[0]`, and to access the second element, we would use `myArray[1]`.
 ```motoko
 let myArray : [Nat] = [23, 16, 32, 25];
