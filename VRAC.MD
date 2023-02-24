@@ -142,7 +142,8 @@ actor {
 }
 ```
 
-## 🔮 Structural typing
+## 🔮 
+
 **Typing** refers to the way in which data types are defined and checked in a programming language. There are two main approaches to typing: nominal typing and structural typing.
 
 In Motoko, the question of whether two types (or classes) are equal is based on their structure, not their names. This property is called **structural typing**. <br/>

@@ -19,7 +19,7 @@
 - Background & context information about Motoko.
 ### Section 2: What is a canister?
 - Technical explanation (Module & State)
-- Messages
+- Messages.
 - The actor model.
 ### Section 3: What is an actor?
 - Keyword in `main.mo` and how canister/actor are related.
