@@ -1,7 +1,4 @@
 
-
-
-
 ## ❌ Errors
 [TODO: ADD LINE INDICATION] <br/>
 Sometimes things go wrong - that's life! <br/> Fortunately, in most cases reading the error message carefuly will be enough to identify & resolve the error. 
