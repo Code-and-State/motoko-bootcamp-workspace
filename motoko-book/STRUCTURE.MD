@@ -79,9 +79,9 @@
 - Importing from another canister (mainnet)
 - Async values.
 ## Chapter 15: Breaking down advanced concepts.
-- Orthogonal persistence
-- Structural typing
-- Atomicity & commit point
+- Orthogonal persistence.
+- Structural typing.
+- Atomicity & commit point.
 ## Chapter 16: Playing with time in Motoko.
 -`Time`
 -`Timer` 
@@ -100,9 +100,8 @@
 - Tree
 - Converting a non-stable type to stable.
 ## Chapter 19: Managing multiple canisters with actor classes.
-- Actor classes
+- Actor classes.
 - Creating a canister factory.
-- Multi-canister
 ## Chapter 20: Randomness.
 - The issue when dealing with randomness in a deterministic system.
 - The `Random` library in Motoko and how to use it.

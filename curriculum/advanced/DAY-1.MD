@@ -16,10 +16,10 @@
         - The actor model.
         - Update & Query calls.
     - Chapter 2: Common programming concepts. 
-        - Variables & Mutability 
-        - Types 
-        - Functions
-        - Comments
+        - Variables & Mutability.
+        - Types.
+        - Functions.
+        - Comments.
     - Chapter 3: Primitive Types in Motoko.
         - `Nat`
         - `Int`

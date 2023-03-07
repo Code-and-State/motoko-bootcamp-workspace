@@ -12,5 +12,4 @@
 - [ ] Create & add illustrations missings.
 - [ ] Complete the `TODO` section.
 - [ ] Add introduction to each day and backstory.
-- [ ] Add challenges directly into guides.
 - [ ] Grammar & orthograph verification.

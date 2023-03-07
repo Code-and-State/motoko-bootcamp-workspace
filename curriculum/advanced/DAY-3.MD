@@ -19,6 +19,10 @@
     - Chapter 8: Storing data in our first data structures.
         - `HashMap`
         - `TrieMap`
+    - Chapter 9: Non-primitives Types.
+        - Arrays.
+        - Mutable arrays.
+        - Iterators.
     - Chapter 10: Advanced types.
         - Optional types.
         - Generic types.
